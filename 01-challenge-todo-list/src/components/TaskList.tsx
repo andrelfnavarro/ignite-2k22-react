@@ -5,9 +5,15 @@ import clipboardSvg from '../assets/clipboard.svg';
 
 interface Props {
   tasks: Task[];
+  onCompleteTask: (taskId: number) => void;
+  onDeleteTask: (taskId: number) => void;
 }
 
-export const TaskList: React.FC<Props> = ({ tasks }) => {
+export const TaskList: React.FC<Props> = ({
+  tasks,
+  onCompleteTask,
+  onDeleteTask,
+}) => {
   const createdTasksTotal = tasks.length;
   const completedTasksTotal = tasks.filter(task => task.isComplete).length;
 
@@ -44,14 +50,30 @@ export const TaskList: React.FC<Props> = ({ tasks }) => {
         <ul className={styles.list}>
           {tasks.map(task => (
             <li key={task.id} className={styles.listItem}>
-              <input type="checkbox" id={`task-${task.id}`} />
+              <div className={styles.checkboxWrapper}>
+                <input
+                  id={`task-${task.id}`}
+                  type="checkbox"
+                  onChange={() => onCompleteTask(task.id)}
+                />
+              </div>
 
-              <label htmlFor={`task-${task.id}`}>{task.title}</label>
+              <label
+                className={
+                  !task.isComplete
+                    ? styles.listItemLabel
+                    : styles.listItemCompletedLabel
+                }
+                htmlFor={`task-${task.id}`}
+              >
+                {task.title}
+              </label>
 
               <button
                 className={styles.deleteButton}
                 title="Deletar tarefa"
                 type="button"
+                onClick={() => onDeleteTask(task.id)}
               >
                 <Trash />
               </button>

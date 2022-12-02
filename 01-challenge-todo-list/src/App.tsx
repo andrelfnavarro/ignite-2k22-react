@@ -26,6 +26,21 @@ function App() {
     ]);
   };
 
+  const handleCompleteTask = (taskId: number) => {
+    setTasks(state =>
+      state.map(task => {
+        return {
+          ...task,
+          isComplete: task.id === taskId ? !task.isComplete : task.isComplete,
+        };
+      })
+    );
+  };
+
+  const handleDeleteTask = (taskId: number) => {
+    setTasks(state => state.filter(task => task.id !== taskId));
+  };
+
   return (
     <div>
       <Header />
@@ -33,7 +48,11 @@ function App() {
       <div className={styles.wrapper}>
         <Input onAddTask={handleAddTask} />
 
-        <TaskList tasks={tasks} />
+        <TaskList
+          tasks={tasks}
+          onCompleteTask={handleCompleteTask}
+          onDeleteTask={handleDeleteTask}
+        />
       </div>
     </div>
   );

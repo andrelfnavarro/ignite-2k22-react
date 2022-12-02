@@ -28,7 +28,12 @@ export const Input: React.FC<Props> = ({ onAddTask, ...rest }) => {
         {...rest}
       />
 
-      <button className={styles.button} title="Criar tarefa" type="submit">
+      <button
+        disabled={newTask.trim().length === 0}
+        className={styles.button}
+        title="Criar tarefa"
+        type="submit"
+      >
         Criar
         <PlusCircle size={16} />
       </button>
