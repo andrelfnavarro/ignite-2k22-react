@@ -1,4 +1,4 @@
-import { createGlobalStyle } from 'styled-components';
+import { createGlobalStyle } from 'styled-components'
 
 export const GlobalStyles = createGlobalStyle`
     margin: 0;
@@ -20,4 +20,4 @@ export const GlobalStyles = createGlobalStyle`
         font-weight: 400;
         font-size: 1rem;
     }
-`;
+`
