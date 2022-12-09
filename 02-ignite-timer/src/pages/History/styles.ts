@@ -1,4 +1,4 @@
-import styled from 'styled-components';
+import styled, { DefaultTheme } from 'styled-components';
 
 export const HistoryContainer = styled.main`
   display: flex;
@@ -47,6 +47,8 @@ export const HistoryList = styled.div`
       font-size: 0.875rem;
       line-height: 1.6;
 
+      text-align: left;
+
       &:first-child {
         width: 50%;
         padding-left: 1.5rem;
@@ -56,5 +58,31 @@ export const HistoryList = styled.div`
         padding-right: 1.5rem;
       }
     }
+  }
+`;
+
+interface StatusProps {
+  status: 'completed' | 'in-progress' | 'canceled';
+}
+
+const statusColors: {
+  [key in StatusProps['status']]: keyof DefaultTheme;
+} = {
+  completed: 'green-500',
+  'in-progress': 'yellow-500',
+  canceled: 'red-500',
+};
+
+export const Status = styled.span<StatusProps>`
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+
+  &::before {
+    content: '';
+    width: 0.5rem;
+    height: 0.5rem;
+    border-radius: 50%;
+    background-color: ${({ status, theme }) => theme[statusColors[status]]};
   }
 `;
