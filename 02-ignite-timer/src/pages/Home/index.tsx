@@ -29,6 +29,7 @@ interface Cycle {
   minutes: number;
   startedAt: Date;
   stoppedAt?: Date;
+  finishedAt?: Date;
 }
 
 export const Home = () => {
@@ -68,13 +69,36 @@ export const Home = () => {
     if (!activeCycle) return;
 
     const interval = setInterval(() => {
-      setTotalSecondsPassed(
-        differenceInSeconds(new Date(), activeCycle.startedAt)
+      const secondsPassed = differenceInSeconds(
+        new Date(),
+        activeCycle.startedAt
       );
+
+      if (secondsPassed >= totalSeconds) {
+        clearInterval(interval);
+
+        setCycles(state =>
+          state.map(cycle => {
+            if (cycle.id === activeCycleId) {
+              return {
+                ...cycle,
+                finishedAt: new Date(),
+              };
+            }
+
+            return cycle;
+          })
+        );
+        setTotalSecondsPassed(totalSeconds);
+
+        return;
+      }
+
+      setTotalSecondsPassed(secondsPassed);
     }, 1000);
 
     return () => clearInterval(interval);
-  }, [activeCycle]);
+  }, [activeCycle, totalSeconds, activeCycleId]);
 
   useEffect(() => {
     if (!activeCycle) return;
