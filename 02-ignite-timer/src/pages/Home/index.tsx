@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Play } from 'phosphor-react';
+import { HandPalm, Play } from 'phosphor-react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
@@ -11,6 +11,7 @@ import {
   MinutesInput,
   Separator,
   StartCountdownButton,
+  StopCountdownButton,
   TaskInput,
 } from './styles';
 import { differenceInSeconds } from 'date-fns';
@@ -27,6 +28,7 @@ interface Cycle {
   task: string;
   minutes: number;
   startedAt: Date;
+  stoppedAt?: Date;
 }
 
 export const Home = () => {
@@ -43,32 +45,6 @@ export const Home = () => {
       minutes: 0,
     },
   });
-
-  useEffect(() => {
-    if (!activeCycle) return;
-
-    const interval = setInterval(() => {
-      setTotalSecondsPassed(
-        differenceInSeconds(new Date(), activeCycle.startedAt)
-      );
-    }, 1000);
-
-    return () => clearInterval(interval);
-  }, [activeCycle]);
-
-  const handleStartNewCycle = (data: FormSchema) => {
-    const newCycle = {
-      id: String(new Date().getTime()),
-      task: data.task,
-      minutes: data.minutes,
-      startedAt: new Date(),
-    };
-
-    setCycles(state => [...state, newCycle]);
-    setActiveCycleId(newCycle.id);
-
-    reset();
-  };
 
   const totalSeconds = activeCycle ? activeCycle.minutes * 60 : 0;
   const currentSeconds = activeCycle ? totalSeconds - totalSecondsPassed : 0;
@@ -87,6 +63,56 @@ export const Home = () => {
 
   const task = watch('task');
   const isSubmitDisabled = !task;
+
+  useEffect(() => {
+    if (!activeCycle) return;
+
+    const interval = setInterval(() => {
+      setTotalSecondsPassed(
+        differenceInSeconds(new Date(), activeCycle.startedAt)
+      );
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }, [activeCycle]);
+
+  useEffect(() => {
+    if (!activeCycle) return;
+
+    document.title = `${formattedCurrentMinutesLeft}:${formattedCurrentSecondsLeft}`;
+  }, [formattedCurrentMinutesLeft, formattedCurrentSecondsLeft]);
+
+  const handleStartNewCycle = (data: FormSchema) => {
+    const newCycle = {
+      id: String(new Date().getTime()),
+      task: data.task,
+      minutes: data.minutes,
+      startedAt: new Date(),
+    };
+
+    setCycles(state => [...state, newCycle]);
+    setActiveCycleId(newCycle.id);
+    setTotalSecondsPassed(0);
+
+    reset();
+  };
+
+  const handleStopCycle = () => {
+    setCycles(state =>
+      state.map(cycle => {
+        if (cycle.id === activeCycleId) {
+          return {
+            ...cycle,
+            stoppedAt: new Date(),
+          };
+        }
+
+        return cycle;
+      })
+    );
+
+    setActiveCycleId(null);
+  };
 
   return (
     <HomeContainer>
@@ -130,10 +156,17 @@ export const Home = () => {
           <span>{formattedCurrentSecondsLeft[1]}</span>
         </CountdownContainer>
 
-        <StartCountdownButton type="submit" disabled={isSubmitDisabled}>
-          <Play size={24} />
-          Start
-        </StartCountdownButton>
+        {activeCycle ? (
+          <StopCountdownButton type="button" onClick={handleStopCycle}>
+            <HandPalm size={24} />
+            Stop
+          </StopCountdownButton>
+        ) : (
+          <StartCountdownButton type="submit" disabled={isSubmitDisabled}>
+            <Play size={24} />
+            Start
+          </StartCountdownButton>
+        )}
       </form>
     </HomeContainer>
   );
