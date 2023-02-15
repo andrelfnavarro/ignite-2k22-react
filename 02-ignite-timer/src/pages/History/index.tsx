@@ -1,6 +1,10 @@
+import { useContext } from 'react';
+import { CyclesContext } from '../../contexts/CyclesContext';
 import { HistoryContainer, HistoryList, Status } from './styles';
 
 export const History = () => {
+  const { cycles } = useContext(CyclesContext);
+
   return (
     <HistoryContainer>
       <h1>History</h1>
@@ -17,32 +21,26 @@ export const History = () => {
           </thead>
 
           <tbody>
-            <tr>
-              <td>Task 1</td>
-              <td>20 minutes</td>
-              <td>2 months ago</td>
-              <td>
-                <Status status="completed">Completed</Status>
-              </td>
-            </tr>
+            {cycles.map(cycle => (
+              <tr key={cycle.id}>
+                <td>{cycle.task}</td>
+                <td>{cycle.minutes} minutes</td>
+                <td>{cycle.startedAt.toLocaleDateString()}</td>
+                <td>
+                  {cycle.finishedAt && (
+                    <Status status="completed">Completed</Status>
+                  )}
 
-            <tr>
-              <td>Task 1</td>
-              <td>20 minutes</td>
-              <td>2 months ago</td>
-              <td>
-                <Status status="in-progress">In progress</Status>
-              </td>
-            </tr>
+                  {cycle.stoppedAt && !cycle.finishedAt && (
+                    <Status status="canceled">Stopped</Status>
+                  )}
 
-            <tr>
-              <td>Task 1</td>
-              <td>20 minutes</td>
-              <td>2 months ago</td>
-              <td>
-                <Status status="canceled">Stopped</Status>
-              </td>
-            </tr>
+                  {!cycle.stoppedAt && !cycle.finishedAt && (
+                    <Status status="in-progress">Active</Status>
+                  )}
+                </td>
+              </tr>
+            ))}
           </tbody>
         </table>
       </HistoryList>

@@ -15,13 +15,14 @@ interface CreateCycleData {
 }
 
 interface CyclesContextType {
+  cycles: Cycle[];
   activeCycle: Cycle | undefined;
   activeCycleId: string | null;
   markActiveCycleAsFinished: () => void;
   totalSecondsPassed: number;
   setSecondsPassed: (secondsPassed: number) => void;
-  handleStartNewCycle: (data: CreateCycleData) => void;
-  handleStopCycle: () => void;
+  createNewCycle: (data: CreateCycleData) => void;
+  stopCurrentCycle: () => void;
 }
 
 export const CyclesContext = createContext<CyclesContextType>(
@@ -58,7 +59,7 @@ export const CyclesContextProvider = ({
     );
   };
 
-  const handleStartNewCycle = (data: CreateCycleData) => {
+  const createNewCycle = (data: CreateCycleData) => {
     const newCycle = {
       id: String(new Date().getTime()),
       task: data.task,
@@ -69,11 +70,9 @@ export const CyclesContextProvider = ({
     setCycles(state => [...state, newCycle]);
     setActiveCycleId(newCycle.id);
     setTotalSecondsPassed(0);
-
-    // reset();
   };
 
-  const handleStopCycle = () => {
+  const stopCurrentCycle = () => {
     setCycles(state =>
       state.map(cycle => {
         if (cycle.id === activeCycleId) {
@@ -93,13 +92,14 @@ export const CyclesContextProvider = ({
   return (
     <CyclesContext.Provider
       value={{
+        cycles,
         activeCycle,
         activeCycleId,
         markActiveCycleAsFinished,
         totalSecondsPassed,
         setSecondsPassed,
-        handleStartNewCycle,
-        handleStopCycle,
+        createNewCycle,
+        stopCurrentCycle,
       }}
     >
       {children}

@@ -21,7 +21,7 @@ const formSchema = z.object({
 type FormSchema = z.infer<typeof formSchema>;
 
 export const Home = () => {
-  const { handleStartNewCycle, handleStopCycle, activeCycle } =
+  const { createNewCycle, stopCurrentCycle, activeCycle } =
     useContext(CyclesContext);
 
   const newCycleForm = useForm<FormSchema>({
@@ -37,9 +37,14 @@ export const Home = () => {
   const task = watch('task');
   const isSubmitDisabled = !task;
 
+  const handleCreateNewCycle = (data: FormSchema) => {
+    createNewCycle(data);
+    reset();
+  };
+
   return (
     <HomeContainer>
-      <form action="" onSubmit={handleSubmit(handleStartNewCycle)}>
+      <form action="" onSubmit={handleSubmit(handleCreateNewCycle)}>
         <FormProvider {...newCycleForm}>
           <NewCycleForm />
         </FormProvider>
@@ -47,7 +52,7 @@ export const Home = () => {
         <Countdown />
 
         {activeCycle ? (
-          <StopCountdownButton type="button" onClick={handleStopCycle}>
+          <StopCountdownButton type="button" onClick={stopCurrentCycle}>
             <HandPalm size={24} />
             Stop
           </StopCountdownButton>
