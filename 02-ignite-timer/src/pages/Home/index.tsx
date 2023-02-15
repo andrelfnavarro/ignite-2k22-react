@@ -1,4 +1,4 @@
-import { createContext, useEffect, useState } from 'react';
+import { useContext } from 'react';
 import { HandPalm, Play } from 'phosphor-react';
 import { useForm, FormProvider } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -9,30 +9,9 @@ import {
   StartCountdownButton,
   StopCountdownButton,
 } from './styles';
-import { differenceInSeconds } from 'date-fns';
 import { NewCycleForm } from './components/NewCycleForm';
 import { Countdown } from './components/Countdown';
-
-interface Cycle {
-  id: string;
-  task: string;
-  minutes: number;
-  startedAt: Date;
-  stoppedAt?: Date;
-  finishedAt?: Date;
-}
-
-interface CyclesContextType {
-  activeCycle: Cycle | undefined;
-  activeCycleId: string | null;
-  markActiveCycleAsFinished: () => void;
-  totalSecondsPassed: number;
-  setSecondsPassed: (secondsPassed: number) => void;
-}
-
-export const CyclesContext = createContext<CyclesContextType>(
-  {} as CyclesContextType
-);
+import { CyclesContext } from '../../contexts/CyclesContext';
 
 const formSchema = z.object({
   task: z.string().min(1),
@@ -42,15 +21,8 @@ const formSchema = z.object({
 type FormSchema = z.infer<typeof formSchema>;
 
 export const Home = () => {
-  const [cycles, setCycles] = useState<Cycle[]>([]);
-  const [activeCycleId, setActiveCycleId] = useState<string | null>(null);
-  const [totalSecondsPassed, setTotalSecondsPassed] = useState(0);
-
-  const activeCycle = cycles.find(cycle => cycle.id === activeCycleId);
-
-  const setSecondsPassed = (secondsPassed: number) => {
-    setTotalSecondsPassed(secondsPassed);
-  };
+  const { handleStartNewCycle, handleStopCycle, activeCycle } =
+    useContext(CyclesContext);
 
   const newCycleForm = useForm<FormSchema>({
     resolver: zodResolver(formSchema),
@@ -65,71 +37,14 @@ export const Home = () => {
   const task = watch('task');
   const isSubmitDisabled = !task;
 
-  const markActiveCycleAsFinished = () => {
-    setCycles(state =>
-      state.map(cycle => {
-        if (cycle.id === activeCycleId) {
-          return {
-            ...cycle,
-            finishedAt: new Date(),
-          };
-        }
-
-        return cycle;
-      })
-    );
-  };
-
-  const handleStartNewCycle = (data: FormSchema) => {
-    const newCycle = {
-      id: String(new Date().getTime()),
-      task: data.task,
-      minutes: data.minutes,
-      startedAt: new Date(),
-    };
-
-    setCycles(state => [...state, newCycle]);
-    setActiveCycleId(newCycle.id);
-    setTotalSecondsPassed(0);
-
-    reset();
-  };
-
-  const handleStopCycle = () => {
-    setCycles(state =>
-      state.map(cycle => {
-        if (cycle.id === activeCycleId) {
-          return {
-            ...cycle,
-            stoppedAt: new Date(),
-          };
-        }
-
-        return cycle;
-      })
-    );
-
-    setActiveCycleId(null);
-  };
-
   return (
     <HomeContainer>
       <form action="" onSubmit={handleSubmit(handleStartNewCycle)}>
-        <CyclesContext.Provider
-          value={{
-            activeCycle,
-            activeCycleId,
-            markActiveCycleAsFinished,
-            totalSecondsPassed,
-            setSecondsPassed,
-          }}
-        >
-          <FormProvider {...newCycleForm}>
-            <NewCycleForm />
-          </FormProvider>
+        <FormProvider {...newCycleForm}>
+          <NewCycleForm />
+        </FormProvider>
 
-          <Countdown />
-        </CyclesContext.Provider>
+        <Countdown />
 
         {activeCycle ? (
           <StopCountdownButton type="button" onClick={handleStopCycle}>
