@@ -1,3 +1,4 @@
+import produce from 'immer';
 import { CyclesActionTypes } from './actions';
 
 export type Cycle = {
@@ -17,39 +18,31 @@ type CyclesState = {
 export const cyclesReducer = (state: CyclesState, action: any) => {
   switch (action.type) {
     case CyclesActionTypes.ADD_CYCLE:
-      return {
-        ...state,
-        cycles: [...state.cycles, action.payload.newCycle],
-        activeCycleId: action.payload.newCycle.id,
-      };
+      return produce(state, draft => {
+        draft.cycles.push(action.payload.newCycle);
+        draft.activeCycleId = action.payload.newCycle.id;
+      });
+
     case CyclesActionTypes.FINISH_CYCLE:
-      return {
-        ...state,
-        cycles: state.cycles.map(cycle => {
-          if (cycle.id === state.activeCycleId) {
-            return {
-              ...cycle,
-              finishedAt: new Date(),
-            };
-          }
-          return cycle;
-        }),
-        activeCycleId: null,
-      };
+      return produce(state, draft => {
+        const activeCycle = draft.cycles.find(
+          cycle => cycle.id === draft.activeCycleId
+        );
+        if (activeCycle) {
+          activeCycle.finishedAt = new Date();
+        }
+        draft.activeCycleId = null;
+      });
     case CyclesActionTypes.STOP_CYCLE:
-      return {
-        ...state,
-        cycles: state.cycles.map(cycle => {
-          if (cycle.id === state.activeCycleId) {
-            return {
-              ...cycle,
-              stoppedAt: new Date(),
-            };
-          }
-          return cycle;
-        }),
-        activeCycleId: null,
-      };
+      return produce(state, draft => {
+        const activeCycle = draft.cycles.find(
+          cycle => cycle.id === draft.activeCycleId
+        );
+        if (activeCycle) {
+          activeCycle.stoppedAt = new Date();
+        }
+        draft.activeCycleId = null;
+      });
   }
 
   return state;
