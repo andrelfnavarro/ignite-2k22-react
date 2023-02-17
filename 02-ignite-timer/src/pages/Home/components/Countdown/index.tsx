@@ -40,7 +40,7 @@ export const Countdown = () => {
     const interval = setInterval(() => {
       const secondsPassed = differenceInSeconds(
         new Date(),
-        activeCycle.startedAt
+        new Date(activeCycle.startedAt)
       );
 
       if (secondsPassed >= totalSeconds) {
